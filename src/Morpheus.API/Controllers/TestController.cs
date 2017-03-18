@@ -23,8 +23,11 @@ namespace Morpheus.API.Controllers
 			var sw = Stopwatch.StartNew();
 			try
 			{
-				_logger.LogDebug($"Get");
-				return await Task.Run(() => "success");
+				var validator = HttpContext.Items["validator"] as IValidation;
+				var valid = validator.IsValid();
+
+				_logger.LogDebug($"Get {valid}");
+				return await Task.Run(() => $"success: {validator} {valid}");
 			}
 			catch (System.Exception)
 			{

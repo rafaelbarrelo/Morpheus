@@ -13,6 +13,8 @@ using MySQL.Data.EntityFrameworkCore.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Text;
+using System.Collections.Generic;
+using Morpheus.API.Validation;
 
 namespace Morpheus.API
 {
@@ -45,7 +47,6 @@ namespace Morpheus.API
 				c.SwaggerDoc("v1", new Info { Title = "Morpheus-API", Version = "v1" });
 			});
 
-
 			services.AddDbContext<RepositoryContext>(options => {
 				options.UseMySQL(Configuration.GetConnectionString("MySQL"));
 			});
@@ -56,6 +57,11 @@ namespace Morpheus.API
 
 			services.AddScoped(typeof(IDbRepository<>), typeof(Repository<>));
 			services.AddTransient<UserService, UserService>();
+
+			var routeValidator = new RouteValidator();
+			routeValidator.Register<TestValidation>("/v1/Test");
+
+			services.AddSingleton(routeValidator);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime life)
@@ -100,7 +106,8 @@ namespace Morpheus.API
 
 			app.UseStaticFiles();
 
-			app.UseMiddleware<ExceptionHandlerMiddleware>();
+			app.UseExceptionHandlerMiddleware();
+			app.UseValidationMiddleware();
 
 			app.UseMvc();
 
